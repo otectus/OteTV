@@ -65,6 +65,11 @@ minecraft {
             }
             if (project.hasProperty('smokeTest')) {
                 property 'otetv.smoketest.output', file('run/smoketest').absolutePath
+                if (project.hasProperty('smokeYouTube')) {
+                    // A YouTube video id; the browser runtime comes from runtime-packaging/package_browser_worker.py.
+                    property 'otetv.smoketest.youtube', project.property('smokeYouTube')
+                    property 'otetv.smoketest.browserBundles', file('runtime-packaging/out').absolutePath
+                }
                 mods { otetv_smoketest { source sourceSets.smokeTest } }
             }
         }

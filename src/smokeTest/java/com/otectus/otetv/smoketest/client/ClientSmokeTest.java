@@ -5,6 +5,7 @@ import com.otectus.otetv.OteTV;
 import com.otectus.otetv.block.TvModel;
 import com.otectus.otetv.block.entity.TvBlockEntity;
 import com.otectus.otetv.client.media.PlaybackBackend;
+import com.otectus.otetv.client.media.RuntimeInstaller;
 import com.otectus.otetv.client.media.RuntimeManager;
 import com.otectus.otetv.client.screen.DiagnosticsScreen;
 import com.otectus.otetv.client.screen.RemoteScreen;
@@ -13,13 +14,21 @@ import com.otectus.otetv.client.screen.TvMenuScreen;
 import com.otectus.otetv.client.screen.TvSettingsScreen;
 import com.otectus.otetv.client.screen.ViewingScreen;
 import com.otectus.otetv.client.tv.ClientPlaybackSession;
+import com.otectus.otetv.client.store.ConsentStore;
+import com.otectus.otetv.client.store.ServerContext;
 import com.otectus.otetv.client.tv.ClientTvManager;
 import com.otectus.otetv.config.OteTvClientConfig;
 import com.otectus.otetv.core.capability.CodecMatrix;
+import com.otectus.otetv.core.json.RuntimeManifestJson;
 import com.otectus.otetv.core.protocol.TvActionType;
+import com.otectus.otetv.core.runtime.RuntimeBundle;
+import com.otectus.otetv.core.source.MediaSource;
+import com.otectus.otetv.core.source.SourceException;
+import com.otectus.otetv.core.source.SourceInput;
 import com.otectus.otetv.core.state.LocalPlaybackState;
 import com.otectus.otetv.network.S2C;
 import com.otectus.otetv.registry.ModItems;
+import com.otectus.otetv.session.ServerSourcePolicy;
 import com.otectus.otetv.session.TvActions;
 import com.otectus.otetv.session.TvSessionService;
 import com.otectus.otetv.smoketest.SmokeTestAgent;
@@ -73,6 +82,9 @@ import java.util.function.BooleanSupplier;
 @Mod.EventBusSubscriber(modid = SmokeTestAgent.MOD_ID, value = Dist.CLIENT)
 public final class ClientSmokeTest {
     private static final String OUTPUT = System.getProperty(SmokeTestAgent.OUTPUT_PROPERTY);
+    /** Optional YouTube phase: a video id, plus the directory holding runtime-packaging's bundle and manifest. */
+    private static final String YOUTUBE = System.getProperty("otetv.smoketest.youtube");
+    private static final String BROWSER_BUNDLES = System.getProperty("otetv.smoketest.browserBundles");
     private static final Map<String, Object> checks = Collections.synchronizedMap(new LinkedHashMap<>());
     private static final long START = Util.getMillis();
     private static final int STEP_TIMEOUT = 20 * 90;
@@ -98,6 +110,23 @@ public final class ClientSmokeTest {
     private static boolean sawCue;
     private static final List<Long> syncErrors = new ArrayList<>();
     private static volatile S2C.ActionResult lastResult;
+    private static RuntimeInstaller.Job installJob;
+    private static volatile BlockPos viewerSpot;
+    private static final List<String> youtubeTrace = new ArrayList<>();
+    private static String lastTraceEntry = "";
+
+    /** Records state changes (state, observed position, shared target) for the YouTube phase report. */
+    private static void traceYouTube() {
+        ClientPlaybackSession s = session();
+        if (s == null || youtubeTrace.size() > 200) {
+            return;
+        }
+        String entry = s.state() + (s.isWaitingForLocalResume() ? "/waiting" : "") + (s.isDiverged() ? "/diverged" : "");
+        if (!entry.equals(lastTraceEntry)) {
+            lastTraceEntry = entry;
+            youtubeTrace.add((Util.getMillis() - START) + "ms " + entry + " at " + s.positionMs() + " target " + s.targetPosition());
+        }
+    }
 
     private ClientSmokeTest() {
     }
@@ -262,6 +291,100 @@ public final class ClientSmokeTest {
         steps.add(new Step("close", () -> true, () -> {
             mc.setScreen(null);
             checks.put("session_diagnostics", session().diagnostics());
+        }));
+        if (YOUTUBE != null && BROWSER_BUNDLES != null) {
+            planYouTube(mc);
+        }
+    }
+
+    /**
+     * The official YouTube player through the native browser worker: installed from the packaged bundle with the
+     * client's own verified installer, consent granted as the consent screen's Allow button does, OteTV muted so an
+     * unattended run is silent, and the player standing close enough for the projected-size rule. The window's focus
+     * flag is set the way GLFW's focus callback sets it, so the run never steals desktop focus.
+     */
+    private static void planYouTube(Minecraft mc) {
+        steps.add(new Step("install_browser_runtime", () -> true, () -> {
+            try {
+                Path dir = Path.of(BROWSER_BUNDLES);
+                RuntimeBundle bundle = RuntimeManifestJson.parse(Files.readString(dir.resolve("manifest.json"), StandardCharsets.UTF_8)).get(0);
+                installJob = RuntimeInstaller.installFromFile(bundle, dir.resolve("otetv-browser-linux-x86_64-" + bundle.version() + ".zip"));
+            } catch (IOException | RuntimeException e) {
+                checks.put("browser_bundle_readable", false);
+                checks.put("browser_bundle_problem", e.toString());
+            }
+        }));
+        steps.add(new Step("browser_runtime_installed", () -> installJob == null || installJob.finished(), () -> {
+            RuntimeManager.BrowserRuntimeInfo info = RuntimeManager.browserInfo();
+            checks.put("browser_runtime_installed", installJob != null && installJob.phase == RuntimeInstaller.Phase.DONE
+                    && info.status() == RuntimeManager.BrowserStatus.INSTALLED);
+            checks.put("browser_runtime", info.status() + " " + info.bundle() + (installJob == null ? "" : " " + installJob.message));
+        }));
+        steps.add(new Step("youtube_source", () -> true, () -> {
+            OteTvClientConfig.GLOBAL_MUTE.set(true);
+            OteTvClientConfig.DEBUG_LOGGING.set(true);  // the worker's own log lines go to the client log
+            UUID playerId = mc.player.getUUID();
+            var server = mc.getSingleplayerServer();
+            server.execute(() -> {
+                ServerPlayer player = server.getPlayerList().getPlayer(playerId);
+                TvSessionService svc = TvSessionService.get();
+                TvBlockEntity be = svc.blockEntity(svc.session(tvId));
+                try {
+                    MediaSource source = SourceInput.fromLink("https://www.youtube.com/watch?v=" + YOUTUBE, "", ServerSourcePolicy.structuralPolicy());
+                    TvActions.Outcome set = TvActions.perform(svc, svc.session(tvId), be, player, TvActionType.SET_SOURCE, -1, TvActions.Args.ofSource(source));
+                    checks.put("youtube_source_set", set.accepted());
+                } catch (SourceException e) {
+                    checks.put("youtube_source_set", false);
+                    checks.put("youtube_source_problem", e.issue().name());
+                }
+                // Three blocks in front of the screen: the picture projects above the 320x180 px minimum.
+                BlockPos spot = anchor.north(3);
+                viewerSpot = spot;
+                player.teleportTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5);
+            });
+        }));
+        steps.add(new Step("youtube_consent", () -> session() != null && session().state() == LocalPlaybackState.NEEDS_CONSENT, () -> {
+            checks.put("youtube_asked_for_consent", true);
+            checks.put("youtube_consent_host", session().waitingHost());
+            ConsentStore.grant(ServerContext.current(), session().waitingHost(), false);
+        }));
+        steps.add(new Step("youtube_viewer_in_place", () -> viewerSpot != null && mc.player.blockPosition().equals(viewerSpot), () -> {
+            mc.setWindowActive(true);
+            aim(mc);
+        }));
+        steps.add(new Step("youtube_playing", () -> {
+            traceYouTube();
+            ClientPlaybackSession s = session();
+            if (s != null && s.isWaitingForLocalResume()) {
+                checks.put("youtube_needed_gesture", true);
+                s.localResume();
+            }
+            return s != null && s.isYouTube() && s.state() == LocalPlaybackState.PLAYING && frames() > 30;
+        }, () -> {
+            checks.put("youtube_first_picture_ms", Util.getMillis() - START);
+            waitUntil = Util.getMillis() + 15000;
+        }));
+        steps.add(new Step("youtube_sample", () -> {
+            traceYouTube();
+            return Util.getMillis() >= waitUntil;
+        }, () -> {
+            checks.put("youtube_trace", new ArrayList<>(youtubeTrace));
+            ClientPlaybackSession s = session();
+            checks.put("youtube_still_playing", s.state() == LocalPlaybackState.PLAYING);
+            checks.put("youtube_frames", frames());
+            checks.put("youtube_position_ms", s.positionMs());
+            checks.put("youtube_diagnostics", s.diagnostics());
+            shot("youtube_world");
+        }));
+        steps.add(new Step("youtube_viewing", () -> true, () -> {
+            mc.options.hideGui = false;
+            mc.setScreen(new ViewingScreen(null, tvId));
+            shot("youtube_viewing");
+        }));
+        steps.add(new Step("youtube_done", () -> true, () -> {
+            mc.setScreen(null);
+            OteTvClientConfig.GLOBAL_MUTE.set(false);
+            OteTvClientConfig.DEBUG_LOGGING.set(false);
         }));
     }
 

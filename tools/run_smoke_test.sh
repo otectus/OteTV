@@ -26,7 +26,13 @@ float_client() {
 mkdir -p "$ROOT/run"
 rm -rf "$ROOT/run/smoketest"
 rm -f "$ROOT"/run/screenshots/otetv_smoke_*.png
-"$QUIET" "$ROOT" runClient -PsmokeTest > "$ROOT/run/smoketest-run.txt" 2>&1 &
+# "tools/run_smoke_test.sh youtube [videoId]" adds the YouTube phase (needs runtime-packaging/out from
+# package_browser_worker.py); the default id is the sample video from Google's IFrame API documentation.
+extra=()
+if [ "${1:-}" = "youtube" ]; then
+    extra=("-PsmokeYouTube=${2:-M7lc1UVf-VE}")
+fi
+"$QUIET" "$ROOT" runClient -PsmokeTest "${extra[@]}" > "$ROOT/run/smoketest-run.txt" 2>&1 &
 pid=$!
 float_client
 wait "$pid"

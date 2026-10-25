@@ -111,4 +111,28 @@ class IpcCodecTest {
         tampered[tampered.length - 2] = 99; // audio track beyond range... corrupts trailing fields
         assertThrows(IpcProtocolException.class, () -> SourceGrant.read(new PayloadReader(tampered)));
     }
+
+    /**
+     * The native browser worker (browser-worker/src/ipc.h) hard-codes these wire values; changing any of them is a
+     * protocol change that must bump OteTvCore.IPC_PROTOCOL_VERSION and the worker together.
+     */
+    @Test
+    void nativeWorkerWireValuesArePinned() {
+        assertEquals(1, com.otectus.otetv.core.OteTvCore.IPC_PROTOCOL_VERSION);
+        assertEquals(1, Msg.ROLE_BROWSER);
+        assertEquals(2, Msg.HelloAck.FLAG_SANDBOXED);
+        assertEquals(1, PixelFormat.BGRA.ordinal());
+        assertEquals(2, com.otectus.otetv.core.state.ErrorCode.RUNTIME_INCOMPATIBLE.ordinal());
+        assertEquals(8, com.otectus.otetv.core.state.ErrorCode.NETWORK.ordinal());
+        assertEquals(22, com.otectus.otetv.core.state.ErrorCode.BROWSER_UNAVAILABLE.ordinal());
+        assertEquals(24, com.otectus.otetv.core.state.ErrorCode.WORKER_CRASH.ordinal());
+        assertEquals(29, com.otectus.otetv.core.state.ErrorCode.INTERNAL.ordinal());
+        assertEquals(0x10, IpcType.LOAD_VIDEO.code());
+        assertEquals(0x16, IpcType.CAPTIONS_TOGGLE.code());
+        assertEquals(0x43, IpcType.VIDEO_FRAME.code());
+        assertEquals(0x4B, IpcType.PLAYER_EVENT.code());
+        assertEquals(512, IpcType.LOAD_VIDEO.maxPayload());
+        assertEquals(8, Msg.PlayerEvent.LOADED);
+        assertEquals(4 + 4 + 8 + 4 + 4 + 4 + 1, FrameHeader.BYTES);
+    }
 }
