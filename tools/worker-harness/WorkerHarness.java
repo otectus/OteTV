@@ -28,6 +28,9 @@ import java.util.Map;
  *
  * java -cp core/build/classes/java/main tools/worker-harness/WorkerHarness.java <worker.jar> <FILE|HTTPS|HLS> <location>
  *      [seconds] [png-out] [lan-host:port] [captions-url]
+ *
+ * Environment: HARNESS_NO_SEEK=1 plays straight through (no seek or pause); HARNESS_REPORT_EVERY=<s> prints the A/V
+ * offset distribution for each window of that many seconds, which is how cumulative drift is measured.
  */
 public class WorkerHarness {
     static volatile int generation = 7;
@@ -205,8 +208,12 @@ public class WorkerHarness {
         w.send(IpcType.OPEN, pw);
         long end = System.nanoTime() + seconds * 1_000_000_000L;
         long seekAt = System.nanoTime() + (seconds / 2) * 1_000_000_000L;
-        boolean seeked = false;
-        boolean pausedOnce = false;
+        boolean noSeek = System.getenv("HARNESS_NO_SEEK") != null;
+        long reportEvery = System.getenv("HARNESS_REPORT_EVERY") == null ? 0 : Long.parseLong(System.getenv("HARNESS_REPORT_EVERY")) * 1_000_000_000L;
+        long nextReport = System.nanoTime() + reportEvery;
+        long started = System.nanoTime();
+        boolean seeked = noSeek;
+        boolean pausedOnce = noSeek;
         while (System.nanoTime() < end) {
             Thread.sleep(50);
             long now = System.nanoTime();
@@ -215,6 +222,15 @@ public class WorkerHarness {
             long audible = audibleNow();
             w.send(IpcType.CLOCK_REPORT, new Msg.ClockReport(gen, now, audible, (audible >= 0 ? Msg.CLOCK_AUDIO_ACTIVE : 0) | (playing ? Msg.CLOCK_PLAYING : 0)).write());
             w.send(IpcType.PING, new Msg.Ping(now, now).write());
+            if (reportEvery > 0 && now >= nextReport) {
+                nextReport += reportEvery;
+                synchronized (WorkerHarness.class) {
+                    System.out.println("--- window ending at " + (now - started) / 1_000_000_000L + " s: frames " + frames + ", last frame pts "
+                            + lastFramePts / 1_000_000 + " ms, audible " + audibleNow() / 1_000_000 + " ms");
+                    printOffsets();
+                    offsets.clear();
+                }
+            }
             if (!seeked && now >= seekAt) {
                 seeked = true;
                 synchronized (WorkerHarness.class) {

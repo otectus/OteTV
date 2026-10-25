@@ -20,6 +20,9 @@ import java.util.List;
  * Prints the typed player events, frame statistics and the time reports, and saves one painted frame as PNG.
  *
  * java -cp core/build/classes/java/main tools/worker-harness/BrowserHarness.java <worker-executable> <videoId> [seconds] [png-out]
+ *
+ * HARNESS_CLICK_TEST=1 instead clicks the middle of the playing player and expects the official player to pause,
+ * proving forwarded pointer input reaches it.
  */
 public class BrowserHarness {
     static volatile int frames;
@@ -53,6 +56,8 @@ public class BrowserHarness {
         w.send(IpcType.RESIZE, new Msg.Resize(1280, 720).write());
         w.send(IpcType.SET_VOLUME, new Msg.SetVolume(GEN, 30, true).write());
         w.send(IpcType.LOAD_VIDEO, new Msg.LoadVideo(GEN, videoId, 0, true, false).write());
+        boolean clickTest = System.getenv("HARNESS_CLICK_TEST") != null;
+        long clickedAt = -1;
         boolean clicked = false;
         boolean paused = false;
         boolean seeked = false;
@@ -61,6 +66,22 @@ public class BrowserHarness {
             Thread.sleep(250);
             long ms = (System.nanoTime() - t0) / 1_000_000L;
             w.send(IpcType.PING, new Msg.Ping(ms, System.nanoTime()).write());
+            if (clickTest) {
+                if (clickedAt < 0 && lastState == 1 && lastTimeMs > 4000) {
+                    clickedAt = ms;
+                    log("click test: clicking the playing player at " + lastTimeMs + " ms");
+                    w.send(IpcType.MOUSE, new Msg.Mouse(GEN, Msg.Mouse.MOVE, 640, 360, 0, 0, 0).write());
+                    w.send(IpcType.MOUSE, new Msg.Mouse(GEN, Msg.Mouse.DOWN, 640, 360, 0, 0, 0).write());
+                    w.send(IpcType.MOUSE, new Msg.Mouse(GEN, Msg.Mouse.UP, 640, 360, 0, 0, 0).write());
+                } else if (clickedAt >= 0 && lastState == 2) {
+                    log("click test: PASS - the official player paused " + (ms - clickedAt) + " ms after the click");
+                    break;
+                } else if (clickedAt >= 0 && ms - clickedAt > 8000) {
+                    log("click test: FAIL - no pause within 8 s (state " + lastState + ")");
+                    break;
+                }
+                continue;
+            }
             if (!clicked && (autoplayBlocked || (ms > 12_000 && lastState != 1))) {
                 clicked = true;
                 log("click the player (a real local gesture)");

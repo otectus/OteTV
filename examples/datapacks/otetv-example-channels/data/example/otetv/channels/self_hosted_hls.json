@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "example:self_hosted_hls",
+  "number": 11,
+  "displayName": "Self-hosted HLS",
+  "description": "An unencrypted HLS playlist you host. Encrypted playlists are refused. Disabled until you edit it.",
+  "enabled": false,
+  "source": { "type": "hls_clear", "url": "https://media.example.com/live/index.m3u8", "label": "Event stream" }
+}

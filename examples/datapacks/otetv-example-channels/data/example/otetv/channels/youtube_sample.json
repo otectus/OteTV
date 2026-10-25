@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "example:youtube_sample",
+  "number": 3,
+  "displayName": "YouTube sample",
+  "description": "The sample video from Google's IFrame Player API documentation. Needs allowYouTube and the OteTV browser runtime.",
+  "source": { "type": "youtube", "videoId": "M7lc1UVf-VE", "startSeconds": 0 }
+}

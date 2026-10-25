@@ -128,6 +128,13 @@ public class TvMenuScreen extends OteTvScreen {
             addRenderableWidget(button(Component.translatable("otetv.screen.diagnostics"),
                     b -> minecraft.setScreen(new DiagnosticsScreen(this, tv)), col2, t, bw, 20));
             t += 24;
+            if (s.source() != null && s.source().type() == SourceType.YOUTUBE) {
+                // Embedding disabled, unavailable videos and a browser runtime that cannot run sandboxed all still
+                // leave the official site, opened in the player's own browser after confirmation.
+                addRenderableWidget(button(Component.translatable("otetv.screen.open_youtube"),
+                        ConfirmLinkScreen.confirmLink(s.source().youtube().orElseThrow().watchUrl(), this, false), l, t, panelWidth, 20));
+                t += 24;
+            }
         } else if (session != null && session.isWaitingForLocalResume()) {
             addRenderableWidget(button(Component.translatable("otetv.screen.press_play"), b -> session.localResume(), l, t, panelWidth, 20));
             t += 24;

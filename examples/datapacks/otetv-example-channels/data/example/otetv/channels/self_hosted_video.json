@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "example:self_hosted_video",
+  "number": 10,
+  "displayName": "Self-hosted video",
+  "description": "Replace the URLs with media you host; add the host to approvedHosts. Disabled until you do.",
+  "enabled": false,
+  "source": {
+    "type": "https_video",
+    "url": "https://media.example.com/videos/lobby.webm",
+    "captionsUrl": "https://media.example.com/videos/lobby.vtt",
+    "label": "Lobby loop"
+  }
+}

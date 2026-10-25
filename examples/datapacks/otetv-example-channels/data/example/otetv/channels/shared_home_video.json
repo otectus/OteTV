@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "example:shared_home_video",
+  "number": 20,
+  "displayName": "Shared home video",
+  "description": "Plays only for players who imported a file with this SHA-256 (My files). The server never sees a path.",
+  "enabled": false,
+  "source": {
+    "type": "shared_local_asset",
+    "assetId": "example:home_video",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "label": "Home video"
+  }
+}

@@ -85,7 +85,8 @@ public final class OteTvClientConfig {
         b.pop().push("runtime");
         RUNTIME_AUTO_UPDATE = b.comment("NOTIFY: tell you about a verified runtime update; it is only activated after you confirm.")
                 .defineEnum("runtimeAutoUpdate", RuntimeAutoUpdate.NOTIFY);
-        RUNTIME_MANIFEST = b.comment("Optional local path or https URL of an additional runtime manifest you trust. Never taken from a server.")
+        RUNTIME_MANIFEST = b.comment("Optional local path of an additional runtime manifest you trust (for bundles you install from a file).",
+                        "Never taken from a server.")
                 .define("runtimeManifest", "");
         SAFE_MODE = b.comment("Diagnostic safe mode: disable picture effects and hardware acceleration in workers. Security is unchanged.")
                 .define("safeMode", false);

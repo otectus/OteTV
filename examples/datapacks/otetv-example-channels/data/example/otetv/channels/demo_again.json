@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "example:demo_again",
+  "number": 2,
+  "displayName": "Demo (second channel)",
+  "description": "The bundled original demo again: works offline once the media runtime is installed.",
+  "source": { "type": "bundled", "assetId": "otetv:welcome", "label": "OteTV Welcome" }
+}

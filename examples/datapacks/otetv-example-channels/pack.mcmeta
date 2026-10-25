@@ -1,0 +1,6 @@
+{
+  "pack": {
+    "description": "OteTV example channels: copy into <world>/datapacks/ and edit the URLs to your own media",
+    "pack_format": 15
+  }
+}
