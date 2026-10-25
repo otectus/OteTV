@@ -19,7 +19,7 @@ All results below were produced on 2026-10-25 by the commands shown, on this env
 | Core unit and protocol tests | `gradlew-quiet.sh . :core:test` | 149 tests, 0 failures |
 | Forge GameTests (dedicated-server dist) | `gradlew-quiet.sh . runGameTestServer` | 27 of 27 passed (fresh world) |
 | Resource check | `check_mod.py .` | 0 errors, 0 warnings (6 informational notes: item models for loop-registered TV items) |
-| Full build | `gradlew-quiet.sh . build` | see the final section |
+| Full build from a fresh clone of commit 8771b44 | `git clone` then `gradlew-quiet.sh <clone> build` | BUILD SUCCESSFUL, 16 of 16 tasks executed, 149 tests passed; `build/libs/otetv-0.1.0.jar` (5,096,562 bytes); the media worker jar was byte-identical to the development build (SHA-256 `d9485ed4...c4e9`) |
 
 GameTests cover: every model at every facing through real item placement; obstructed placement places nothing and
 keeps the item; floor and wall support; chunk-boundary assemblies on both axes; exactly one drop from any part of every
