@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_console": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "otetv:wooden_monochrome_tv"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "otetv:woodgrain_color_tv_upgrade"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_console",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "otetv:woodgrain_color_tv_upgrade"
+    ]
+  },
+  "sends_telemetry_event": false
+}

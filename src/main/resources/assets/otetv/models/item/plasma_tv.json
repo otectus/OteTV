@@ -1,0 +1,141 @@
+{
+ "parent": "otetv:block/plasma_tv",
+ "display": {
+  "gui": {
+   "rotation": [
+    30,
+    225,
+    0
+   ],
+   "translation": [
+    0.088,
+    -1.668,
+    -0.861
+   ],
+   "scale": [
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "ground": {
+   "rotation": [
+    0,
+    0,
+    0
+   ],
+   "translation": [
+    0.0,
+    2.25,
+    -0.05
+   ],
+   "scale": [
+    0.1,
+    0.1,
+    0.1
+   ]
+  },
+  "fixed": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    -0.0,
+    -1.5,
+    0.1
+   ],
+   "scale": [
+    0.2,
+    0.2,
+    0.2
+   ]
+  },
+  "head": {
+   "rotation": [
+    0,
+    180,
+    0
+   ],
+   "translation": [
+    -0.0,
+    -3.0,
+    0.2
+   ],
+   "scale": [
+    0.4,
+    0.4,
+    0.4
+   ]
+  },
+  "thirdperson_righthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    -0.053,
+    2.26,
+    -1.1
+   ],
+   "scale": [
+    0.15,
+    0.15,
+    0.15
+   ]
+  },
+  "thirdperson_lefthand": {
+   "rotation": [
+    75,
+    45,
+    0
+   ],
+   "translation": [
+    -0.053,
+    2.26,
+    -1.1
+   ],
+   "scale": [
+    0.15,
+    0.15,
+    0.15
+   ]
+  },
+  "firstperson_righthand": {
+   "rotation": [
+    0,
+    45,
+    0
+   ],
+   "translation": [
+    -0.057,
+    -1.2,
+    -0.057
+   ],
+   "scale": [
+    0.16,
+    0.16,
+    0.16
+   ]
+  },
+  "firstperson_lefthand": {
+   "rotation": [
+    0,
+    225,
+    0
+   ],
+   "translation": [
+    0.057,
+    -1.2,
+    0.057
+   ],
+   "scale": [
+    0.16,
+    0.16,
+    0.16
+   ]
+  }
+ }
+}

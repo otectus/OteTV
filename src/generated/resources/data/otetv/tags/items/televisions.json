@@ -1,0 +1,10 @@
+{
+  "values": [
+    "otetv:wooden_monochrome_tv",
+    "otetv:woodgrain_color_tv",
+    "otetv:portable_tv",
+    "otetv:crt_tv",
+    "otetv:plasma_tv",
+    "otetv:oled_tv"
+  ]
+}

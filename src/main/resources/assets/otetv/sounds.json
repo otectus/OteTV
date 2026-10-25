@@ -1,0 +1,54 @@
+{
+ "tv.power_on": {
+  "subtitle": "subtitles.otetv.tv.power_on",
+  "sounds": [
+   "otetv:tv/power_on"
+  ]
+ },
+ "tv.power_off": {
+  "subtitle": "subtitles.otetv.tv.power_off",
+  "sounds": [
+   "otetv:tv/power_off"
+  ]
+ },
+ "tv.crt_startup": {
+  "subtitle": "subtitles.otetv.tv.crt_startup",
+  "sounds": [
+   "otetv:tv/crt_startup"
+  ]
+ },
+ "tv.channel_click": {
+  "subtitle": "subtitles.otetv.tv.channel_click",
+  "sounds": [
+   "otetv:tv/channel_click"
+  ]
+ },
+ "tv.knob_turn": {
+  "subtitle": "subtitles.otetv.tv.knob_turn",
+  "sounds": [
+   "otetv:tv/knob_turn"
+  ]
+ },
+ "tv.crt_hum": {
+  "subtitle": "subtitles.otetv.tv.crt_hum",
+  "sounds": [
+   {
+    "name": "otetv:tv/crt_hum",
+    "stream": false,
+    "volume": 0.5
+   }
+  ]
+ },
+ "remote.beep": {
+  "subtitle": "subtitles.otetv.remote.beep",
+  "sounds": [
+   "otetv:remote/beep"
+  ]
+ },
+ "remote.pair": {
+  "subtitle": "subtitles.otetv.remote.pair",
+  "sounds": [
+   "otetv:remote/pair"
+  ]
+ }
+}

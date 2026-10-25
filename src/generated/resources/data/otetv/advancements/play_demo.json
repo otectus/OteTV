@@ -1,0 +1,30 @@
+{
+  "parent": "otetv:root",
+  "criteria": {
+    "played": {
+      "conditions": {},
+      "trigger": "otetv:played_demo"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "otetv.advancement.play_demo.description"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "item": "otetv:wooden_monochrome_tv"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "otetv.advancement.play_demo.title"
+    }
+  },
+  "requirements": [
+    [
+      "played"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,34 @@
+{
+ "variants": {
+  "facing=north,mount=stand": {
+   "model": "otetv:block/portable_tv"
+  },
+  "facing=north,mount=wall": {
+   "model": "otetv:block/portable_tv"
+  },
+  "facing=east,mount=stand": {
+   "model": "otetv:block/portable_tv",
+   "y": 90
+  },
+  "facing=east,mount=wall": {
+   "model": "otetv:block/portable_tv",
+   "y": 90
+  },
+  "facing=south,mount=stand": {
+   "model": "otetv:block/portable_tv",
+   "y": 180
+  },
+  "facing=south,mount=wall": {
+   "model": "otetv:block/portable_tv",
+   "y": 180
+  },
+  "facing=west,mount=stand": {
+   "model": "otetv:block/portable_tv",
+   "y": 270
+  },
+  "facing=west,mount=wall": {
+   "model": "otetv:block/portable_tv",
+   "y": 270
+  }
+ }
+}

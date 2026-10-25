@@ -1,0 +1,74 @@
+{
+  "criteria": {
+    "crafted_crt_tv": {
+      "conditions": {
+        "recipe_id": "otetv:crt_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_oled_tv": {
+      "conditions": {
+        "recipe_id": "otetv:oled_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_plasma_tv": {
+      "conditions": {
+        "recipe_id": "otetv:plasma_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_portable_tv": {
+      "conditions": {
+        "recipe_id": "otetv:portable_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_wooden_monochrome_tv": {
+      "conditions": {
+        "recipe_id": "otetv:wooden_monochrome_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_woodgrain_color_tv": {
+      "conditions": {
+        "recipe_id": "otetv:woodgrain_color_tv"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    },
+    "crafted_woodgrain_color_tv_upgrade": {
+      "conditions": {
+        "recipe_id": "otetv:woodgrain_color_tv_upgrade"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "otetv.advancement.root.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "otetv:crt_tv"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "otetv.advancement.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "crafted_wooden_monochrome_tv",
+      "crafted_woodgrain_color_tv",
+      "crafted_woodgrain_color_tv_upgrade",
+      "crafted_portable_tv",
+      "crafted_crt_tv",
+      "crafted_plasma_tv",
+      "crafted_oled_tv"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

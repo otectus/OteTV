@@ -1,0 +1,42 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "block": "otetv:oled_tv",
+          "condition": "minecraft:block_state_property",
+          "properties": {
+            "part": "1"
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_name",
+              "source": "block_entity"
+            },
+            {
+              "function": "minecraft:copy_nbt",
+              "ops": [
+                {
+                  "op": "replace",
+                  "source": "tv.preset",
+                  "target": "OteTvCosmetic.preset"
+                }
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "otetv:oled_tv"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "otetv:blocks/oled_tv"
+}

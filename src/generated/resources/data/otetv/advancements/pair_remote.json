@@ -1,0 +1,30 @@
+{
+  "parent": "otetv:root",
+  "criteria": {
+    "paired": {
+      "conditions": {},
+      "trigger": "otetv:paired_remote"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "translate": "otetv.advancement.pair_remote.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "otetv:remote_control"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "otetv.advancement.pair_remote.title"
+    }
+  },
+  "requirements": [
+    [
+      "paired"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,8 @@
+{
+  "values": [
+    "otetv:portable_tv",
+    "otetv:crt_tv",
+    "otetv:plasma_tv",
+    "otetv:oled_tv"
+  ]
+}

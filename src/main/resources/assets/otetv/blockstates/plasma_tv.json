@@ -1,0 +1,154 @@
+{
+ "variants": {
+  "facing=north,mount=stand,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=stand,part=1": {
+   "model": "otetv:block/plasma_tv"
+  },
+  "facing=north,mount=stand,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=stand,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=stand,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=stand,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=wall,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=wall,part=1": {
+   "model": "otetv:block/plasma_tv_wall"
+  },
+  "facing=north,mount=wall,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=wall,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=wall,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=north,mount=wall,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=stand,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=stand,part=1": {
+   "model": "otetv:block/plasma_tv",
+   "y": 90
+  },
+  "facing=east,mount=stand,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=stand,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=stand,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=stand,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=wall,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=wall,part=1": {
+   "model": "otetv:block/plasma_tv_wall",
+   "y": 90
+  },
+  "facing=east,mount=wall,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=wall,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=wall,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=east,mount=wall,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=stand,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=stand,part=1": {
+   "model": "otetv:block/plasma_tv",
+   "y": 180
+  },
+  "facing=south,mount=stand,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=stand,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=stand,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=stand,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=wall,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=wall,part=1": {
+   "model": "otetv:block/plasma_tv_wall",
+   "y": 180
+  },
+  "facing=south,mount=wall,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=wall,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=wall,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=south,mount=wall,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=stand,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=stand,part=1": {
+   "model": "otetv:block/plasma_tv",
+   "y": 270
+  },
+  "facing=west,mount=stand,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=stand,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=stand,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=stand,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=wall,part=0": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=wall,part=1": {
+   "model": "otetv:block/plasma_tv_wall",
+   "y": 270
+  },
+  "facing=west,mount=wall,part=2": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=wall,part=3": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=wall,part=4": {
+   "model": "otetv:block/plasma_tv_part"
+  },
+  "facing=west,mount=wall,part=5": {
+   "model": "otetv:block/plasma_tv_part"
+  }
+ }
+}
