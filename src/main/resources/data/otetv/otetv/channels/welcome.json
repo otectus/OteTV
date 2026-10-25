@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "otetv:welcome",
+  "number": 1,
+  "displayName": {
+    "translate": "channel.otetv.welcome"
+  },
+  "description": "The bundled OteTV demo. Works offline once the media runtime is installed.",
+  "source": {
+    "type": "bundled",
+    "assetId": "otetv:welcome",
+    "label": "OteTV Welcome"
+  }
+}
