@@ -10,8 +10,8 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,8 +24,12 @@ public final class ServerEvents {
     private ServerEvents() {
     }
 
+    /**
+     * Starts before any level loads: spawn chunks (and the controllers in them) are loaded ahead of
+     * {@code ServerStartingEvent}, and a controller that loads with no service never gets a session.
+     */
     @SubscribeEvent
-    public static void onServerStarting(ServerStartingEvent event) {
+    public static void onServerAboutToStart(ServerAboutToStartEvent event) {
         TvSessionService.start(event.getServer());
     }
 
