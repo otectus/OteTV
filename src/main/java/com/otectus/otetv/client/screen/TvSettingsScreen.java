@@ -35,6 +35,7 @@ public class TvSettingsScreen extends OteTvScreen {
     private TvRole newRole = TvRole.CONTROLLER;
     private long seenRevision = -2;
     private int aclPage;
+    private int trustedLabelY;
     private final Consumer<S2C.ActionResult> listener = this::onResult;
 
     public TvSettingsScreen(@Nullable Screen parent, UUID tv) {
@@ -124,7 +125,9 @@ public class TvSettingsScreen extends OteTvScreen {
         addRenderableWidget(button(Component.translatable(s.publicControls() ? "otetv.settings.public_on" : "otetv.settings.public_off"),
                 b -> ClientTvManager.get().sendAction(tv, TvActionType.SET_PUBLIC_CONTROLS, 0, s.publicControls() ? 0 : 1, "", null, null),
                 l + 164, t, 156, 20, acl ? null : noPerm));
-        t += 30;
+        t += 28;
+        trustedLabelY = t;
+        t += 14;
         playerBox = new EditBox(font, l, t, 120, 18, Component.translatable("otetv.settings.player"));
         playerBox.setMaxLength(16);
         playerBox.setValue(playerDraft);
@@ -148,14 +151,15 @@ public class TvSettingsScreen extends OteTvScreen {
             t += 20;
         }
         if (entries.size() > per) {
+            // Page arrows share the heading row, so a full page never runs into the bottom buttons.
             addRenderableWidget(button(Component.literal("<"), b -> {
                 aclPage = Math.max(0, aclPage - 1);
                 rebuild();
-            }, l, t, 20, 18));
+            }, l + panelWidth - 44, trustedLabelY - 5, 20, 18));
             addRenderableWidget(button(Component.literal(">"), b -> {
                 aclPage = Math.min((entries.size() - 1) / per, aclPage + 1);
                 rebuild();
-            }, l + 24, t, 20, 18));
+            }, l + panelWidth - 20, trustedLabelY - 5, 20, 18));
         }
         int bottom = top() + panelHeight - 26 - 12;
         addRenderableWidget(button(Component.translatable("otetv.settings.reset"), b -> minecraft.setScreen(new ConfirmScreen(confirmed -> {
@@ -180,6 +184,8 @@ public class TvSettingsScreen extends OteTvScreen {
 
     @Override
     protected void renderContent(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        g.drawString(font, Component.translatable("otetv.settings.trusted_players"), left(), top() + 108, mutedColor());
+        if (trustedLabelY > 0) {
+            g.drawString(font, Component.translatable("otetv.settings.trusted_players"), left(), trustedLabelY, mutedColor());
+        }
     }
 }

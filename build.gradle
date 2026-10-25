@@ -27,11 +27,21 @@ sourceSets {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
     }
+    // Test-only agent mod (otetv_smoketest): drives a dev client into a fresh flat world, plays the bundled demo on a
+    // placed TV, saves screenshots and smoketest-result.json, then quits. Used by runClient -PsmokeTest. Never shipped.
+    smokeTest {
+        java.setSrcDirs(['src/smokeTest/java'])
+        resources.setSrcDirs(['src/smokeTest/resources'])
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
+    }
 }
 
 configurations {
     gameTestImplementation.extendsFrom implementation
     gameTestRuntimeOnly.extendsFrom runtimeOnly
+    smokeTestImplementation.extendsFrom implementation
+    smokeTestRuntimeOnly.extendsFrom runtimeOnly
 }
 
 minecraft {
@@ -52,6 +62,10 @@ minecraft {
                     source sourceSets.main
                     source coreProject.sourceSets.main
                 }
+            }
+            if (project.hasProperty('smokeTest')) {
+                property 'otetv.smoketest.output', file('run/smoketest').absolutePath
+                mods { otetv_smoketest { source sourceSets.smokeTest } }
             }
         }
 
@@ -143,6 +157,13 @@ tasks.named('processResources', ProcessResources).configure {
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }
+}
+
+tasks.named('processSmokeTestResources', ProcessResources).configure {
+    def agentProperties = [loader_version_range: loader_version_range, mod_license: mod_license, mod_version: mod_version,
+                           mod_authors: mod_authors, mod_id: mod_id]
+    inputs.properties agentProperties
+    filesMatching('META-INF/mods.toml') { expand agentProperties }
 }
 
 repositories {

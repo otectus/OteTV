@@ -270,10 +270,17 @@ public final class RuntimeManager {
             if (!done.await(20, TimeUnit.SECONDS)) {
                 result.compareAndSet(null, new MediaRuntimeInfo(MediaStatus.ERROR, "", Set.of(), List.of(), false, "probe timed out"));
             }
-            List<String> log = worker.recentLog();
             MediaRuntimeInfo info = result.get();
-            if (info.status() == MediaStatus.MISSING && info.detail().isEmpty() && !log.isEmpty()) {
-                info = new MediaRuntimeInfo(MediaStatus.MISSING, "", Set.of(), List.of(), false, log.get(log.size() - 1));
+            if (info.status() != MediaStatus.AVAILABLE) {
+                // The worker explains itself on stderr; let the log thread drain it, then keep the tail for diagnostics.
+                List<String> log = drainedLog(worker);
+                if (!log.isEmpty()) {
+                    String tail = String.join(" | ", log.subList(Math.max(0, log.size() - 3), log.size()));
+                    info = new MediaRuntimeInfo(info.status(), info.runtimeVersion(), info.elements(), info.codecs(), info.rateControl(),
+                            info.detail().isEmpty() ? tail : info.detail() + ": " + tail);
+                    OteTV.LOGGER.warn("OteTV media runtime probe: {}; worker log: {}", info.status(),
+                            String.join(" | ", log.subList(Math.max(0, log.size() - 12), log.size())));
+                }
             }
             OteTV.LOGGER.info("OteTV media runtime: {} {}", info.status(), info.runtimeVersion());
             return info;
@@ -287,6 +294,20 @@ public final class RuntimeManager {
                 worker.close();
             }
         }
+    }
+
+    /** The worker's stderr once it has stopped growing (at most half a second), for a failed probe's diagnostics. */
+    private static List<String> drainedLog(WorkerProcess worker) throws InterruptedException {
+        List<String> log = worker.recentLog();
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(50);
+            List<String> now = worker.recentLog();
+            if (now.size() == log.size() && !worker.isAlive()) {
+                return now;
+            }
+            log = now;
+        }
+        return log;
     }
 
     // ---- bundled media ------------------------------------------------------------------------------------------------

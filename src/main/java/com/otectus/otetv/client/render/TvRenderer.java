@@ -34,6 +34,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,6 +55,15 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
     private static final ResourceLocation LED_STANDBY = OteTV.id("textures/screen/led_standby.png");
     private static final ResourceLocation DIAL = OteTV.id("textures/screen/dial_pointer.png");
     private static final int FULL_BRIGHT = LightTexture.FULL_BRIGHT;
+    private static final int MAX_CAPTION_ROWS = 4;
+    // Viewer-space depth of each layer, in model pixels toward the viewer. Layers are a visible fraction of a pixel apart
+    // so a TV across a room does not z-fight; only overlays and text ever overlap the picture.
+    private static final float Z_PICTURE = 0f;
+    private static final float Z_SCANLINES = -0.05f;
+    private static final float Z_VIGNETTE = -0.08f;
+    private static final float Z_GRAIN = -0.10f;
+    private static final float Z_TEXT_BACK = -0.14f;
+    private static final float Z_TEXT = -0.20f;
 
     private final Font font;
     private long frameCounter;
@@ -91,11 +101,12 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
         drawIndicators(pose, buffers, be, profile, pub, light);
 
         if (pub.powered()) {
-            // Viewer space: origin at the aperture's top-left as seen from the front, +x right, +y down, model pixels.
+            // Viewer space: origin at the aperture's top-left as seen from the front, +x right, +y down, model pixels,
+            // +z away from the viewer (the convention Font uses for in-world text: its glyph backgrounds sit at +0.01).
             pose.pushPose();
             pose.translate(a.x1() / 16.0, a.y1() / 16.0, a.z() / 16.0);
             pose.mulPose(Axis.YP.rotationDegrees(180));
-            pose.scale(1 / 16f, -1 / 16f, 1 / 16f);
+            pose.scale(1 / 16f, -1 / 16f, -1 / 16f);
             float w = (float) a.width();
             float h = (float) a.height();
             VideoTexture tex = session == null ? null : session.prepareFrame();
@@ -104,7 +115,6 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
             }
             boolean showVideo = tex != null && session.state() != LocalPlaybackState.EXCESS_SESSION && !session.tooSmallForYouTube();
             if (showVideo) {
-                quad(pose, buffers.getBuffer(RenderType.text(BLACK)), 0, 0, w, h, 0f, 0, 0, 1, 1, 0xFF000000);
                 float contentAspect = (float) tex.width() / Math.max(1, tex.height());
                 float cw = w;
                 float ch = w / contentAspect;
@@ -114,25 +124,34 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
                 }
                 float cx = (w - cw) / 2;
                 float cy = (h - ch) / 2;
-                quad(pose, buffers.getBuffer(RenderType.text(tex.location())), cx, cy, cx + cw, cy + ch, -0.01f, 0, 0, 1, 1, 0xFFFFFFFF);
+                // Letterbox bars only where the picture does not reach: nothing full-size lies under the picture.
+                if (cy > 0.001f) {
+                    quad(pose, buffers.getBuffer(RenderType.text(BLACK)), 0, 0, w, cy, Z_PICTURE, 0, 0, 1, 1, 0xFF000000);
+                    quad(pose, buffers.getBuffer(RenderType.text(BLACK)), 0, cy + ch, w, h, Z_PICTURE, 0, 0, 1, 1, 0xFF000000);
+                }
+                if (cx > 0.001f) {
+                    quad(pose, buffers.getBuffer(RenderType.text(BLACK)), 0, cy, cx, cy + ch, Z_PICTURE, 0, 0, 1, 1, 0xFF000000);
+                    quad(pose, buffers.getBuffer(RenderType.text(BLACK)), cx + cw, cy, w, cy + ch, Z_PICTURE, 0, 0, 1, 1, 0xFF000000);
+                }
+                quad(pose, buffers.getBuffer(RenderType.text(tex.location())), cx, cy, cx + cw, cy + ch, Z_PICTURE, 0, 0, 1, 1, 0xFFFFFFFF);
                 if (session.effectsEnabled()) {
                     if (profile.scanlines()) {
-                        quad(pose, buffers.getBuffer(RenderType.text(SCANLINES)), cx, cy, cx + cw, cy + ch, -0.02f, 0, 0, 1, 1, 0x66FFFFFF);
+                        quad(pose, buffers.getBuffer(RenderType.text(SCANLINES)), cx, cy, cx + cw, cy + ch, Z_SCANLINES, 0, 0, 1, 1, 0x66FFFFFF);
                     }
                     if (profile.vignette()) {
-                        quad(pose, buffers.getBuffer(RenderType.text(VIGNETTE)), 0, 0, w, h, -0.03f, 0, 0, 1, 1, 0xFFFFFFFF);
+                        quad(pose, buffers.getBuffer(RenderType.text(VIGNETTE)), 0, 0, w, h, Z_VIGNETTE, 0, 0, 1, 1, 0xFFFFFFFF);
                     }
                     if (!OteTvClientConfig.REDUCE_MOTION_AND_FLICKER.get()) {
                         float ou = (frameCounter * 37 % 64) / 64f;
                         float ov = (frameCounter * 53 % 64) / 64f;
-                        quad(pose, buffers.getBuffer(RenderType.text(GRAIN)), 0, 0, w, h, -0.035f, ou, ov, ou + 0.5f, ov + 0.5f, 0x22FFFFFF);
+                        quad(pose, buffers.getBuffer(RenderType.text(GRAIN)), 0, 0, w, h, Z_GRAIN, ou, ov, ou + 0.5f, ov + 0.5f, 0x22FFFFFF);
                     }
                 }
                 drawStatusBadge(pose, buffers, session, w, h);
                 drawCaption(pose, buffers, session, w, h);
             } else {
                 ResourceLocation card = model.isWidescreen() ? STANDBY_WIDE : STANDBY;
-                quad(pose, buffers.getBuffer(RenderType.text(card)), 0, 0, w, h, 0f, 0, 0, 1, 1, 0xFFFFFFFF);
+                quad(pose, buffers.getBuffer(RenderType.text(card)), 0, 0, w, h, Z_PICTURE, 0, 0, 1, 1, 0xFFFFFFFF);
                 drawStandbyText(pose, buffers, pub, session, id, w, h);
             }
             pose.popPose();
@@ -186,31 +205,35 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
         if (pub.locked()) {
             line3 = I18n.get("otetv.screen.locked");
         }
+        String[] lines = {CatalogCache.localize(title), line2, line3};
+        int[] colors = {0xFFFFFFFF, 0xFFE0E0E0, 0xFFFFD27A};
         float scale = Math.max(0.08f, h / 64f);
-        pose.pushPose();
-        pose.translate(w / 2, h * 0.68f, -0.05f);
-        pose.scale(scale, scale, scale);
         float maxWidth = w / scale * 0.9f;
-        drawCentered(pose, buffers, CatalogCache.localize(title), 0, 0xFFFFFFFF, maxWidth);
-        drawCentered(pose, buffers, line2, 10, 0xFFE0E0E0, maxWidth);
-        if (!line3.isEmpty()) {
-            drawCentered(pose, buffers, line3, 20, 0xFFFFD27A, maxWidth);
+        // The shadow pass sits behind the text pass, a fixed fraction of a pixel apart so they never z-fight.
+        for (int pass = 0; pass < 2; pass++) {
+            boolean shadow = pass == 0;
+            pose.pushPose();
+            pose.translate(w / 2, h * 0.68f, shadow ? Z_TEXT_BACK : Z_TEXT);
+            pose.scale(scale, scale, scale);
+            for (int i = 0; i < lines.length; i++) {
+                drawCentered(pose, buffers, lines[i], i * 10, colors[i], maxWidth, shadow);
+            }
+            pose.popPose();
         }
-        pose.popPose();
     }
 
-    private void drawCentered(PoseStack pose, MultiBufferSource buffers, String text, float y, int color, float maxWidth) {
+    private void drawCentered(PoseStack pose, MultiBufferSource buffers, String text, float y, int color, float maxWidth, boolean shadow) {
         if (text == null || text.isEmpty()) {
             return;
         }
         String clipped = font.plainSubstrByWidth(text, (int) maxWidth);
         float x = -font.width(clipped) / 2f;
-        Matrix4f m = pose.last().pose();
-        font.drawInBatch(Component.literal(clipped), x + 0.6f, y + 0.6f, 0xFF000000 | (color & 0x3F3F3F) >> 2, false, m, buffers,
-                Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
-        pose.translate(0, 0, -0.01f);
-        font.drawInBatch(Component.literal(clipped), x, y, color, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
-        pose.translate(0, 0, 0.01f);
+        if (shadow) {
+            font.drawInBatch(Component.literal(clipped), x + 0.6f, y + 0.6f, 0xFF000000 | (color & 0x3F3F3F) >> 2, false, pose.last().pose(), buffers,
+                    Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+        } else {
+            font.drawInBatch(Component.literal(clipped), x, y, color, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+        }
     }
 
     private void drawStatusBadge(PoseStack pose, MultiBufferSource buffers, ClientPlaybackSession session, float w, float h) {
@@ -229,11 +252,17 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
             return;
         }
         float scale = Math.max(0.06f, h / 90f);
+        String clipped = font.plainSubstrByWidth(text, (int) ((w - 2) / scale));
+        int textWidth = font.width(clipped);
         pose.pushPose();
-        pose.translate(1.0f, 1.0f, -0.06f);
+        pose.translate(1.0f, 1.0f, Z_TEXT_BACK);
         pose.scale(scale, scale, scale);
-        font.drawInBatch(Component.literal(text), 0, 0, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.SEE_THROUGH,
-                0x80000000, FULL_BRIGHT);
+        quad(pose, buffers.getBuffer(RenderType.text(BLACK)), -1, -1, textWidth + 1, 9, 0, 0, 0, 1, 1, 0x99000000);
+        pose.popPose();
+        pose.pushPose();
+        pose.translate(1.0f, 1.0f, Z_TEXT);
+        pose.scale(scale, scale, scale);
+        font.drawInBatch(Component.literal(clipped), 0, 0, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
         pose.popPose();
     }
 
@@ -243,17 +272,30 @@ public final class TvRenderer implements BlockEntityRenderer<TvBlockEntity> {
             return; // YouTube captions stay inside the official player; no replacement subtitles over it
         }
         float scale = (float) (Math.max(0.06f, h / 80f) * OteTvClientConfig.CAPTION_SCALE.get());
+        int maxWidth = (int) (w / scale * 0.95f);
+        List<FormattedCharSequence> rows = new ArrayList<>();
+        for (String line : cue.text().split("\n")) {
+            rows.addAll(font.split(Component.literal(line), maxWidth));
+        }
+        if (rows.size() > MAX_CAPTION_ROWS) {
+            rows = rows.subList(0, MAX_CAPTION_ROWS);
+        }
+        int widest = 0;
+        for (FormattedCharSequence row : rows) {
+            widest = Math.max(widest, font.width(row));
+        }
+        float top = h - (rows.size() * 10 + 2) * scale;
         pose.pushPose();
-        String[] lines = cue.text().split("\n");
-        pose.translate(w / 2, h - (lines.length * 10 + 2) * scale, -0.07f);
+        pose.translate(w / 2, top, Z_TEXT_BACK);
         pose.scale(scale, scale, scale);
-        for (int i = 0; i < lines.length; i++) {
-            List<FormattedCharSequence> wrapped = font.split(Component.literal(lines[i]), (int) (w / scale * 0.95f));
-            for (FormattedCharSequence seq : wrapped) {
-                float x = -font.width(seq) / 2f;
-                font.drawInBatch(seq, x, i * 10, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0xB0000000, FULL_BRIGHT);
-                break;
-            }
+        quad(pose, buffers.getBuffer(RenderType.text(BLACK)), -widest / 2f - 2, -1, widest / 2f + 2, rows.size() * 10, 0, 0, 0, 1, 1, 0xB0000000);
+        pose.popPose();
+        pose.pushPose();
+        pose.translate(w / 2, top, Z_TEXT);
+        pose.scale(scale, scale, scale);
+        for (int i = 0; i < rows.size(); i++) {
+            FormattedCharSequence row = rows.get(i);
+            font.drawInBatch(row, -font.width(row) / 2f, i * 10, 0xFFFFFFFF, false, pose.last().pose(), buffers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
         }
         pose.popPose();
     }

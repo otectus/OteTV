@@ -180,9 +180,17 @@ public class TvMenuScreen extends OteTvScreen {
         g.drawString(font, name, l, y, textColor());
         g.drawString(font, Component.translatable("otetv.screen.owner", s.ownerName().isEmpty() ? "-" : s.ownerName(),
                 Component.translatable(s.yourRole().translationKey())), l, y + 11, mutedColor());
-        String source = s.source() == null ? Component.translatable("otetv.screen.no_source").getString()
-                : (s.channelNumber() > 0 ? Component.translatable("otetv.screen.channel", s.channelNumber()).getString() + " " + CatalogCache.localize(s.channelLabel()) + " - " : "")
-                + s.source().displayLabel();
+        String source;
+        if (s.source() == null) {
+            source = Component.translatable("otetv.screen.no_source").getString();
+        } else if (s.channelNumber() > 0) {
+            String channel = CatalogCache.localize(s.channelLabel());
+            String label = s.source().displayLabel();
+            source = Component.translatable("otetv.screen.channel", s.channelNumber()).getString() + " " + channel
+                    + (label.isEmpty() || label.equals(channel) ? "" : " - " + label);
+        } else {
+            source = s.source().displayLabel();
+        }
         g.drawString(font, font.plainSubstrByWidth(source, panelWidth), l, y + 22, textColor());
         ClientPlaybackSession session = ClientTvManager.get().session(tv);
         Component mode = s.source() == null ? Component.empty() : Component.translatable(sourceModeKey(s));

@@ -43,6 +43,7 @@ public class SourcePickerScreen extends OteTvScreen {
 
     private static final int ROWS = 6;
     private final UUID tv;
+    private boolean noChannelsShown;
     private Tab tab;
     private int page;
     private EditBox linkBox;
@@ -175,6 +176,11 @@ public class SourcePickerScreen extends OteTvScreen {
         }
         if (entries.isEmpty()) {
             setStatus(Component.translatable("otetv.picker.no_channels"), false);
+            noChannelsShown = true;
+        } else if (noChannelsShown) {
+            // The catalog arrived after an empty first page was drawn.
+            setStatus(Component.empty(), false);
+            noChannelsShown = false;
         }
         pager(l, top() + panelHeight - 38, entries.size());
     }

@@ -1,0 +1,19 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="otetv_smoketest"
+version="${mod_version}"
+displayName="OteTV Smoke Test Agent"
+authors="${mod_authors}"
+description='''
+Test-only agent for runClient -PsmokeTest. Inert unless -Dotetv.smoketest.output is set. Never ship this.
+'''
+
+[[dependencies.otetv_smoketest]]
+modId="${mod_id}"
+mandatory=true
+versionRange="[${mod_version},)"
+ordering="AFTER"
+side="BOTH"

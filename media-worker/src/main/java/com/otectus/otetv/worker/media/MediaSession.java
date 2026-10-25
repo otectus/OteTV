@@ -107,6 +107,8 @@ final class MediaSession implements Closeable {
     private volatile long durationMs = -1;
     private volatile long minPtsNanos = Long.MIN_VALUE;
     private volatile long pendingSeekMs = -1;
+    /** Where playback was last placed (open or seek): the reported position until a frame or clock report says more. */
+    private volatile long placedAtMs;
     private volatile boolean posterPending = true;
     private volatile long sentAudioBytes;
     private volatile long consumedAudioBytes;
@@ -130,6 +132,7 @@ final class MediaSession implements Closeable {
         this.generation = grant.generation();
         this.playing = !grant.startPaused();
         this.videoEnabled = grant.videoEnabled();
+        this.placedAtMs = Math.max(0, grant.startPositionMs());
         clock.reset(generation);
     }
 
@@ -928,6 +931,7 @@ final class MediaSession implements Closeable {
     }
 
     void seek(int newGeneration, long positionMs) {
+        placedAtMs = positionMs;
         boolean flushNow = seekable && prerolled;
         if (flushNow) {
             raiseFlushBarriers();
@@ -1075,7 +1079,7 @@ final class MediaSession implements Closeable {
         } else if (lastFramePts >= 0) {
             pos = lastFramePts / 1_000_000L;
         } else {
-            pos = Math.max(0, grant.startPositionMs());
+            pos = Math.max(0, placedAtMs);
         }
         int flags = (live ? Msg.STATE_LIVE : 0) | (seekable ? Msg.STATE_SEEKABLE : 0) | (hasAudio ? Msg.STATE_HAS_AUDIO : 0)
                 | (hasVideo ? Msg.STATE_HAS_VIDEO : 0) | (state == LocalPlaybackState.BUFFERING ? Msg.STATE_BUFFERING : 0);

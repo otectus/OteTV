@@ -29,8 +29,12 @@ public final class LocalStore {
     private LocalStore() {
     }
 
+    /**
+     * Always absolute: the game directory may be relative (development runs use {@code .}), and paths handed to worker
+     * processes, which run in their own working directory, must not depend on the client's.
+     */
     public static Path root() {
-        Path dir = Minecraft.getInstance().gameDirectory.toPath().resolve("otetv");
+        Path dir = Minecraft.getInstance().gameDirectory.toPath().toAbsolutePath().normalize().resolve("otetv");
         ensureDirectory(dir);
         return dir;
     }
