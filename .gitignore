@@ -27,3 +27,35 @@ runtime-packaging/out/
 
 # Datagen hash cache
 src/generated/resources/.cache/
+
+# Screenshots, crash reports and logs from runs outside the run directories
+screenshots/
+crash-reports/
+logs/
+
+# Browser runtime bundles and CEF archives copied outside the ignored directories above
+otetv-browser-*.zip
+cef_binary_*/
+cef_binary_*.tar.bz2
+
+# Native and other IDE build trees
+cmake-build-*/
+.vs/
+.fleet/
+*.ipr
+*.iws
+
+# Python bytecode from tools/ and runtime-packaging/
+__pycache__/
+*.py[cod]
+
+# Temporary and OS files
+tmp/
+*.tmp
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Personal Claude Code settings
+.claude/settings.local.json
