@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            name = 'MinecraftForge'
+            url = 'https://maven.minecraftforge.net/'
+        }
+    }
+}
+
+rootProject.name = 'otetv'
+
+// core: pure Java domain model, validation, protocol, synchronization math, parsers. No Minecraft.
+// media-worker: out-of-process GStreamer playback worker. No Minecraft.
+// The native CEF browser worker (browser-worker/) is a CMake project, deliberately outside Gradle.
+include 'core', 'media-worker'

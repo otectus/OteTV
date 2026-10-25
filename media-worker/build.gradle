@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+}
+
+version = mod_version
+group = mod_group_id
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+    implementation "org.freedesktop.gstreamer:gst1-java-core:${gst1_java_core_version}"
+    // gst1-java-core declares jna [5.2.0,6.0); never let that float to whatever is newest.
+    implementation("net.java.dev.jna:jna") {
+        version { strictly jna_version }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// A self-contained, reproducible jar: identical inputs give an identical SHA-256, which the mod embeds and
+// verifies before every launch.
+tasks.register('workerJar', Jar) {
+    archiveBaseName = 'otetv-media-worker'
+    archiveVersion = ''
+    archiveClassifier = ''
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes('Main-Class': 'com.otectus.otetv.worker.media.MediaWorkerMain',
+                'Implementation-Title': 'otetv-media-worker',
+                'Implementation-Version': project.version)
+    }
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from({ configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }) {
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.EC', 'module-info.class',
+                'META-INF/versions/*/module-info.class', 'META-INF/maven/**'
+    }
+}
+
+tasks.named('assemble').configure { dependsOn 'workerJar' }

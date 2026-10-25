@@ -1,0 +1,29 @@
+# Gradle / IDE
+.gradle/
+build/
+out/
+*.iml
+.idea/
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# Minecraft dev runs
+run/
+run-server/
+run-gametest/
+run-data/
+
+# Native browser worker build output and downloaded CEF distributions
+browser-worker/build/
+browser-worker/third_party/
+runtime-packaging/out/
+
+# Scratch
+*.log
+.cache/
+
+# Datagen hash cache
+src/generated/resources/.cache/
