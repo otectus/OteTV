@@ -138,7 +138,7 @@ public final class RuntimeInstaller {
                 }
                 return;
             } catch (com.otectus.otetv.core.net.DestinationBlockedException e) {
-                last = new IOException("download host blocked: " + e.category());
+                last = new IOException("download host blocked: " + e.describe());
             } catch (IOException e) {
                 last = e;
             }

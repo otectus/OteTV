@@ -80,6 +80,16 @@ public final class CodecMatrix {
         return results;
     }
 
+    /** Whether the combination with this id is supported by a runtime offering these elements. */
+    public static boolean supports(String id, Set<String> availableElements) {
+        for (Result r : evaluate(availableElements)) {
+            if (r.combination().id().equals(id)) {
+                return r.status() == Status.SUPPORTED;
+            }
+        }
+        return false;
+    }
+
     /** Every element name the matrix cares about; the worker reports only these to keep the reply bounded. */
     public static Set<String> relevantElements() {
         java.util.TreeSet<String> set = new java.util.TreeSet<>();

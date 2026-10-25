@@ -106,6 +106,14 @@ public final class TvAudioStream implements AudioStream {
         }
     }
 
+    /** Whether any of the {@code buffersQueued} newest handed chunks still carries real audio rather than padding. */
+    public boolean realAudioQueued(int buffersQueued) {
+        synchronized (handed) {
+            int skip = Math.max(0, handed.size() - buffersQueued);
+            return handed.stream().skip(skip).anyMatch(c -> c.ptsNanos() >= 0);
+        }
+    }
+
     public long underruns() {
         return underruns;
     }

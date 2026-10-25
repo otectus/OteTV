@@ -197,8 +197,16 @@ public final class DirectMediaBackend implements PlaybackBackend, WorkerProcess.
 
     @Override
     public Status status() {
-        return new Status(state, error, detail, positionMs, durationMs, live, capabilities, videoWidth, videoHeight,
-                (flags & Msg.STATE_HAS_AUDIO) != 0, (flags & Msg.STATE_HAS_VIDEO) != 0, buffering, ended);
+        LocalPlaybackState shown = state;
+        boolean endedNow = ended;
+        if (shown == LocalPlaybackState.ENDED && (flags & Msg.STATE_HAS_AUDIO) != 0 && !audio.tailPlayed()) {
+            // Everything has been delivered but the buffered tail is still being heard; ENDED (which a trusted viewer
+            // reports to the server, advancing the queue) waits for it.
+            shown = LocalPlaybackState.PLAYING;
+            endedNow = false;
+        }
+        return new Status(shown, error, detail, positionMs, durationMs, live, capabilities, videoWidth, videoHeight,
+                (flags & Msg.STATE_HAS_AUDIO) != 0, (flags & Msg.STATE_HAS_VIDEO) != 0, buffering, endedNow);
     }
 
     @Override
@@ -232,6 +240,26 @@ public final class DirectMediaBackend implements PlaybackBackend, WorkerProcess.
             out.add("worker: " + log.get(i));
         }
         return out;
+    }
+
+    /** Sorted position for a cue, or -1 if it is already present (an HLS re-open re-sends the sidecar). IPC thread only. */
+    private int insertionPoint(Cue cue) {
+        int lo = 0;
+        int hi = cues.size();
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (cues.get(mid).startMs() <= cue.startMs()) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        for (int i = lo - 1; i >= 0 && cues.get(i).startMs() == cue.startMs(); i--) {
+            if (cues.get(i).equals(cue)) {
+                return -1;
+            }
+        }
+        return lo;
     }
 
     private void fail(ErrorCode code, String why) {
@@ -290,8 +318,11 @@ public final class DirectMediaBackend implements PlaybackBackend, WorkerProcess.
                 if (c.generation() == generation && cues.size() < MAX_CUES) {
                     String text = TextSanitizer.sanitizeLines(c.text(), 3, 160);
                     if (!text.isEmpty()) {
-                        cues.add(new Cue(c.startMs(), c.endMs(), text));
-                        cues.sort(java.util.Comparator.comparingLong(Cue::startMs));
+                        Cue cue = new Cue(c.startMs(), c.endMs(), text);
+                        int at = insertionPoint(cue);
+                        if (at >= 0) {
+                            cues.add(at, cue);
+                        }
                     }
                 }
             }

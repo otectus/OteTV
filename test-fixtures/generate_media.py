@@ -51,11 +51,15 @@ def demo():
         text('LEFT', 24, 300, 26, ":enable='between(t,10,12)+between(t,40,42)'"),
         text('RIGHT', 260, 300, 26, ":enable='between(t,14,16)+between(t,44,46)'"),
     ])
+    sources = ['-f', 'lavfi', '-i', 'smptehdbars=size=640x360:rate=30:duration=60',
+               '-f', 'lavfi', '-i', "aevalsrc=exprs='%s|%s':s=48000:d=60" % (LEFT, RIGHT), '-vf', vf]
     out = os.path.join(DEMO_DIR, 'welcome.webm')
-    run(['-f', 'lavfi', '-i', 'smptehdbars=size=640x360:rate=30:duration=60',
-         '-f', 'lavfi', '-i', "aevalsrc=exprs='%s|%s':s=48000:d=60" % (LEFT, RIGHT),
-         '-vf', vf, '-c:v', 'libvpx', '-b:v', '420k', '-crf', '14', '-auto-alt-ref', '0', '-g', '60', '-deadline', 'good',
-         '-c:a', 'libvorbis', '-q:a', '3', '-map_metadata', '-1', '-fflags', '+bitexact', '-shortest', out])
+    run(sources + ['-c:v', 'libvpx', '-b:v', '420k', '-crf', '14', '-auto-alt-ref', '0', '-g', '60', '-deadline', 'good',
+                   '-c:a', 'libvorbis', '-q:a', '3', '-map_metadata', '-1', '-fflags', '+bitexact', '-shortest', out])
+    # The same clip as Theora/Vorbis Ogg, for runtimes with only GStreamer's base plugins (no Matroska demuxer).
+    ogv = os.path.join(DEMO_DIR, 'welcome.ogv')
+    run(sources + ['-c:v', 'libtheora', '-q:v', '5', '-g', '60', '-c:a', 'libvorbis', '-q:a', '3', '-map_metadata', '-1',
+                   '-fflags', '+bitexact', '-shortest', ogv])
     cues = [
         (0, 5, 'Welcome to OteTV.'),
         (5, 10, 'This original clip checks picture and sound.'),
@@ -77,7 +81,8 @@ def demo():
         f.write('WEBVTT - OteTV demo captions\n\n')
         for i, (a, b, t) in enumerate(cues, 1):
             f.write('%d\n%s --> %s\n%s\n\n' % (i, ts(a), ts(b), t))
-    print('demo:', os.path.relpath(out, ROOT), os.path.getsize(out), 'bytes')
+    for f in (out, ogv):
+        print('demo:', os.path.relpath(f, ROOT), os.path.getsize(f), 'bytes')
 
 
 def fixtures():

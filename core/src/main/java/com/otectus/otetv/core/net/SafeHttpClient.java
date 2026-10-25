@@ -122,7 +122,7 @@ public final class SafeHttpClient {
                     throw new HttpException(status, "rejected redirect target: " + e.reason());
                 }
                 if (current.isHttps() && !next.isHttps()) {
-                    throw new DestinationBlockedException(next.host(), AddressCategory.PUBLIC, "https to http downgrade");
+                    throw new DestinationBlockedException(next.host(), null, "https to http downgrade");
                 }
                 current = next;
                 continue;

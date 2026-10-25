@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DestinationPolicyTest {
@@ -71,8 +72,10 @@ class DestinationPolicyTest {
 
     @Test
     void plainHttpNeedsAGrant() {
-        assertThrows(DestinationBlockedException.class, () -> DestinationPolicy.publicOnly()
+        DestinationBlockedException e = assertThrows(DestinationBlockedException.class, () -> DestinationPolicy.publicOnly()
                 .resolveAllowed(SafeUrl.parse("http://media.example.com/a.webm"), fixed("93.184.216.34")));
+        assertNull(e.category(), "refused before resolution, so no address class is claimed");
+        assertEquals("plain http requires a LAN grant", e.describe());
     }
 
     @Test

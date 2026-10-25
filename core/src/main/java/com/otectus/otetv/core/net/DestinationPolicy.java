@@ -44,7 +44,7 @@ public final class DestinationPolicy {
     /** Plain http is only permitted to a granted LAN host. */
     public void checkScheme(SafeUrl url) throws DestinationBlockedException {
         if (!url.isHttps() && !hasGrantFor(url)) {
-            throw new DestinationBlockedException(url.host(), AddressCategory.PUBLIC, "plain http requires a LAN grant");
+            throw new DestinationBlockedException(url.host(), null, "plain http requires a LAN grant");
         }
     }
 

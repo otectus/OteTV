@@ -39,9 +39,11 @@ public final class PcmRing {
     private long discontinuities;
     private int generation = Integer.MIN_VALUE;
 
+    /** Clears all audio for a new flush generation; the credit counter restarts with it (worker window per generation). */
     public synchronized void reset(int newGeneration) {
         chunks.clear();
         buffered = 0;
+        consumedTotal = 0;
         generation = newGeneration;
     }
 

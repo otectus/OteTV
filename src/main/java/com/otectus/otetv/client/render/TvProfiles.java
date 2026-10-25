@@ -33,7 +33,7 @@ public final class TvProfiles implements ResourceManagerReloadListener {
         put(TvModel.WOODEN_MONOCHROME, TvMount.STAND, new TvProfile(new TvProfile.Aperture(4, 14, 18, 24.5, 1.45), true, true, true,
                 List.of(new TvProfile.Indicator(TvProfile.IndicatorType.DIAL, 23.5, 7.5, 0.45, 3.0))));
         put(TvModel.WOODGRAIN_COLOR, TvMount.STAND, new TvProfile(new TvProfile.Aperture(4, 4.5, 16, 13.5, 1.7), false, true, true,
-                List.of(new TvProfile.Indicator(TvProfile.IndicatorType.DIAL, 25, 10, 1.45, 5.0))));
+                List.of(new TvProfile.Indicator(TvProfile.IndicatorType.DIAL, 25, 10, 0.95, 5.0))));
         put(TvModel.PORTABLE, TvMount.STAND, new TvProfile(new TvProfile.Aperture(3, 3.5, 11, 9.5, 3.7), false, true, true,
                 List.of(new TvProfile.Indicator(TvProfile.IndicatorType.DIAL, 12.5, 2.0, 3.65, 1.8))));
         put(TvModel.CRT, TvMount.STAND, new TvProfile(new TvProfile.Aperture(4, 8.5, 28, 26.5, 0.7), false, true, true,

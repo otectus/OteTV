@@ -68,6 +68,18 @@ public final class TvAudioOutput implements AutoCloseable {
         endOfStream = true;
     }
 
+    /** True once end of stream was signalled and every real sample has been played out, audibly or virtually. */
+    public boolean tailPlayed() {
+        if (!endOfStream || ring.bufferedBytes() > 0) {
+            return false;
+        }
+        if (instance == null || stream == null) {
+            return true;
+        }
+        int[] q = AudioChannels.queueState(instance);
+        return !stream.realAudioQueued(q == null ? 4 : q[0]);
+    }
+
     public void configure(boolean stereoRelative, int audibleRange) {
         if (stereo != stereoRelative || range != audibleRange) {
             stereo = stereoRelative;
@@ -149,7 +161,8 @@ public final class TvAudioOutput implements AutoCloseable {
                 return pts;
             }
         }
-        if (lastPts >= 0 && running) {
+        // After the last sample the position holds instead of drifting past the end.
+        if (lastPts >= 0 && running && !(endOfStream && ring.bufferedBytes() == 0)) {
             return lastPts + (now - lastPtsAtNanos);
         }
         return lastPts;

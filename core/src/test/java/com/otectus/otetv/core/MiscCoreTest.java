@@ -126,6 +126,10 @@ class MiscCoreTest {
         assertEquals(CodecMatrix.Status.SUPPORTED, ogg.status());
         CodecMatrix.Result hevc = results.stream().filter(r -> r.combination().id().equals("mp4_hevc")).findFirst().orElseThrow();
         assertEquals(CodecMatrix.Status.UNSUPPORTED, hevc.status());
+        assertTrue(CodecMatrix.supports("ogg_theora_vorbis", Set.of("oggdemux", "theoradec", "vorbisdec")));
+        assertFalse(CodecMatrix.supports("webm_vp8_vorbis", Set.of("oggdemux", "theoradec", "vorbisdec", "avdec_vp8")));
+        assertFalse(CodecMatrix.supports("mp4_hevc", Set.of("qtdemux", "avdec_h265")));
+        assertFalse(CodecMatrix.supports("no_such_combination", Set.of()));
     }
 
     @Test

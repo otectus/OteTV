@@ -157,7 +157,7 @@ public final class RuntimeManager {
         List<String> cmd = new ArrayList<>();
         cmd.add(javaExecutable().toString());
         cmd.add("-Xms32m");
-        cmd.add("-Xmx384m");
+        cmd.add("-Xmx512m");
         cmd.add("-XX:+UseSerialGC");
         cmd.add("-Djava.awt.headless=true");
         Map<String, String> env = new HashMap<>();
@@ -296,21 +296,34 @@ public final class RuntimeManager {
         if (!"otetv:welcome".equals(assetId)) {
             throw new IOException("unknown bundled asset " + assetId);
         }
+        String name = welcomeEncoding(lastMedia.elements());
         Path dir = LocalStore.dir("runtime").resolve("media");
         LocalStore.ensureDirectory(dir);
-        Path out = dir.resolve("welcome.webm");
-        try (InputStream in = RuntimeManager.class.getResourceAsStream("/otetv_media/welcome.webm")) {
+        Path out = dir.resolve(name);
+        try (InputStream in = RuntimeManager.class.getResourceAsStream("/otetv_media/" + name)) {
             if (in == null) {
                 throw new IOException("bundled demo is missing from this OteTV build");
             }
             byte[] data = in.readAllBytes();
             if (!Files.isRegularFile(out) || Files.size(out) != data.length || !Hashing.matches(Hashing.sha256Hex(data), Hashing.sha256Hex(out))) {
-                Path temp = dir.resolve("welcome.webm.tmp");
+                Path temp = dir.resolve(name + ".tmp");
                 Files.write(temp, data);
                 Files.move(temp, out, StandardCopyOption.REPLACE_EXISTING);
             }
         }
         return out.toRealPath();
+    }
+
+    /**
+     * The demo ships as VP8/Vorbis WebM (the brief's baseline) plus a Theora/Vorbis Ogg encode of the same original clip,
+     * because a runtime with only GStreamer's base plugins has no Matroska demuxer. Every client picks the encoding its
+     * runtime decodes; both carry the same timeline, so a shared TV stays in sync across them.
+     */
+    static String welcomeEncoding(Set<String> elements) {
+        if (!CodecMatrix.supports("webm_vp8_vorbis", elements) && CodecMatrix.supports("ogg_theora_vorbis", elements)) {
+            return "welcome.ogv";
+        }
+        return "welcome.webm";
     }
 
     public static byte[] bundledCaptions(String assetId) throws IOException {
