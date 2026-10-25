@@ -102,27 +102,6 @@ quieter output.
 | [examples/datapacks/](examples/datapacks/) | Example channel datapack |
 | [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Licenses of bundled and separately distributed components |
 
-## Assumptions and deviations from the brief
-
-- **Name**: the brief's "EraTV" is OteTV here (mod id `otetv`, package `com.otectus.otetv`, application identity
-  `com.otectus.otetv`).
-- **Browser binding**: JCEF hardcodes `no_sandbox`, so in-world YouTube uses a native CEF worker on the same IPC
-  contract, as the brief allows ([ADR 0003](docs/adr/0003-native-cef-browser-worker.md)). It is built and tested on
-  Linux only; a Windows build needs a sandbox port and a Windows build host, so YouTube on Windows offers Open on
-  YouTube.
-- **Wrapper origin**: instead of a project-operated HTTPS domain (registering one needs the maintainer's
-  authorization), the worker serves the wrapper itself under `https://com.otectus.otetv`
-  ([ADR 0002](docs/adr/0002-youtube-wrapper-origin-and-identity.md)).
-- **Runtime hosting**: bundles, manifests and the installer exist, but nothing is published; the built-in manifest is
-  empty. GStreamer is used from the system (Linux) or the official installer (Windows); no GStreamer bundle is built.
-- **Demo encoding**: the brief asks for a WebM demo. It ships as WebM plus an Ogg Theora/Vorbis encode of the same
-  original clip, chosen automatically when the runtime has no Matroska demuxer (as on the test machine).
-- **Rate-based drift correction** is off because no pitch-preserving path is qualified; large drift is corrected by
-  sustained-drift seeks with a cooldown.
-- **Not verified here**: Windows, a second Linux distribution, Intel/AMD GPUs, two real players on a dedicated server,
-  physical lip-sync measurement, two-hour sessions, Oculus/Embeddium and MCEF coexistence. These are listed with the
-  verified results in [docs/test-results.md](docs/test-results.md).
-
 ## License
 
 MIT for OteTV's code and original assets. Third-party components are listed in
